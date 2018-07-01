@@ -4,21 +4,39 @@
 #include <string>
 
 #include "wfn_anim.hpp"
+#include "ioutil.hpp"
 
 using namespace wfn_eng::anim;
 
 /**
- *
+ * Loads a string in from disk.
  */
-size_t loadFunction(std::istream& input, std::string&) {
-  return 0;
+size_t loadFunction(std::istream& input, std::string& str) {
+  size_t bytesIn = 0;
+
+  size_t strSize;
+  bytesIn += ioutil::read<size_t>(input, strSize);
+
+  str.resize(strSize);
+  for (size_t i = 0; i < strSize; i++) {
+    str[i] = (char)input.get();
+  }
+
+  return bytesIn;
 }
 
 /**
- *
+ * Saves a string to disk.
  */
 size_t saveFunction(std::ostream& output, const std::string& str) {
-  return 0;
+  size_t bytesOut = 0;
+
+  bytesOut += ioutil::write<size_t>(output, str.size());
+  for (const char& c : str) {
+    output.put(c);
+  }
+
+  return bytesOut;
 }
 
 /**
@@ -74,17 +92,20 @@ int main(int argc, char** argv) {
       std::cerr << "(" << i << "): Duration mismatch, save has: "
                 << saveFrame.duration
                 << ", but load has: "
-                << loadFrame.duration;
+                << loadFrame.duration
+                << std::endl;
       errd = true;
     }
 
     // Here we can compare against the frame, but we might not be able to
     // depending on the template used.
     if (saveFrame.frame != loadFrame.frame) {
-      std::cerr << "(" << i << "): Frame mismatch, save has: "
+      std::cerr << "(" << i << "): Frame mismatch, save has: \""
                 << saveFrame.frame
-                << ", but load has: "
-                << loadFrame.frame;
+                << "\", but load has: \""
+                << loadFrame.frame
+                << "\""
+                << std::endl;
       errd = true;
     }
   }
